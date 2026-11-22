@@ -15,3 +15,7 @@ This Python standard-library suite checks all **20** synthetic fixtures, expecte
 ## Correlated risk-scoring tests
 
 [`risk_scoring.py`](risk_scoring.py) and [`test_risk_scoring.py`](test_risk_scoring.py) check risk categories and 15-minute auth correlation, including attempted maintenance-command replay. GitHub Actions runs the suite on relevant changes. These tests validate a Python mirror, not KQL execution.
+
+### Session/IP correlation suite
+
+[`test_session_ip_correlation.py`](test_session_ip_correlation.py) validates a Python model of 4688-to-4624 session links and 4625 same-IP failures. It also verifies time windows, account/host mismatch, invalid IDs, missing IPs, and the safe handling of unmatched sessions. GitHub Actions runs these tests on changes. The tests **do not execute KQL**.
