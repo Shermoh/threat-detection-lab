@@ -1,0 +1,151 @@
+// SYNTHETIC KQL VALIDATION HARNESS — no real SecurityEvent ingestion required.
+// Paste the ENTIRE file into the Azure Monitor / Sentinel Logs query editor.
+// 29 fictional 4624/4625/4688 events in an inline datatable.
+// The body copies the source correlation rule with an absolute test clock
+// instead of ago() so the results do not change as dates advance.
+// Expected: seven PASS rows, zero FAIL rows.
+// This file was generated from the repository's CSV fixture, but KQL
+// execution in a Microsoft environment is still pending.
+let testNow=datetime(2026-11-21T16:00:00Z);
+let SecurityEvent = datatable(_ItemId:string, TimeGenerated:datetime, EventID:int, Computer:string, Account:string, TargetDomainName:string, TargetUserName:string, NewProcessName:string, CommandLine:string, ParentProcessName:string, SubjectLogonId:string, TargetLogonId:string, IpAddress:string)[
+  @"P001", datetime(2026-11-21T12:03:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x111", @"", @"",
+  @"L001", datetime(2026-11-21T12:00:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x111", @"192.0.2.10",
+  @"F001", datetime(2026-11-21T11:58:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"P002", datetime(2026-11-21T12:40:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x222", @"", @"",
+  @"L002", datetime(2026-11-21T12:38:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x222", @"203.0.113.77",
+  @"F002", datetime(2026-11-21T12:31:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F003", datetime(2026-11-21T12:34:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F004", datetime(2026-11-21T12:37:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F005", datetime(2026-11-21T12:41:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F006", datetime(2026-11-21T12:32:00Z), 4625, @"LAB-WIN99", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F007", datetime(2026-11-21T12:20:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"P003", datetime(2026-11-21T13:10:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x333", @"", @"",
+  @"L003", datetime(2026-11-21T13:08:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x333", @"192.0.2.20",
+  @"F008", datetime(2026-11-21T13:00:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F009", datetime(2026-11-21T13:03:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F010", datetime(2026-11-21T13:07:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"P004", datetime(2026-11-21T13:40:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x444", @"", @"",
+  @"L004", datetime(2026-11-21T13:38:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x445", @"203.0.113.77",
+  @"F011", datetime(2026-11-21T13:31:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F012", datetime(2026-11-21T13:34:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"F013", datetime(2026-11-21T13:37:00Z), 4625, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77",
+  @"L004-OLD", datetime(2026-11-21T12:50:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x444", @"203.0.113.77",
+  @"P005", datetime(2026-11-21T14:10:00Z), 4688, @"LAB-WIN01", @"LAB\jane", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE", @"0x777", @"", @"",
+  @"L005", datetime(2026-11-21T14:08:00Z), 4624, @"LAB-WIN01", @"", @"LAB", @"jane", @"", @"", @"", @"", @"0x777", @"198.51.100.11",
+  @"P006", datetime(2026-11-21T14:40:00Z), 4688, @"LAB-WIN01", @"LAB\jane", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -NoProfile -Command Get-Service", @"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE", @"0x777", @"", @"",
+  @"P007", datetime(2026-11-21T15:10:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x666", @"", @"",
+  @"L007", datetime(2026-11-21T15:08:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x666", @"-",
+  @"P008", datetime(2026-11-21T15:40:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x0", @"", @"",
+  @"L008", datetime(2026-11-21T15:38:00Z), 4624, @"LAB-WIN04", @"", @"LAB", @"svc-maint", @"", @"", @"", @"", @"0x0", @"203.0.113.77"
+];
+let Expected=datatable(TestCase:string, Computer:string, ProcessTime:datetime, ExpectedFailures:long, ExpectedPoints:long, ExpectedBand:string, ExpectedDisposition:string)[
+  @"P001", @"LAB-WIN04", datetime(2026-11-21T12:03:00Z), 0, 5, @"Low", @"Low",
+  @"P002", @"LAB-WIN04", datetime(2026-11-21T12:40:00Z), 3, 55, @"High", @"High",
+  @"P003", @"LAB-WIN04", datetime(2026-11-21T13:10:00Z), 0, 5, @"Low", @"Low",
+  @"P004", @"LAB-WIN04", datetime(2026-11-21T13:40:00Z), 0, 15, @"Low", @"Review: identity context incomplete",
+  @"P005", @"LAB-WIN01", datetime(2026-11-21T14:10:00Z), 0, 55, @"High", @"High",
+  @"P007", @"LAB-WIN04", datetime(2026-11-21T15:10:00Z), 0, 15, @"Low", @"Review: identity context incomplete",
+  @"P008", @"LAB-WIN04", datetime(2026-11-21T15:40:00Z), 0, 15, @"Low", @"Review: identity context incomplete"
+];
+let lookback = 7d;
+let sessionWindow = 30m;
+let failureWindow = 15m;
+let ValidSessions = SecurityEvent
+| where TimeGenerated >= (testNow - lookback - sessionWindow)
+| where EventID == 4624
+| where isnotempty(TargetDomainName) and isnotempty(TargetUserName)
+| extend HostKey = tolower(tostring(Computer)),
+         ActorKey = tolower(strcat(tostring(TargetDomainName), @"\", tostring(TargetUserName))),
+         SessionKey = tolower(tostring(TargetLogonId)),
+         SourceIp = tolower(tostring(IpAddress))
+| where isnotempty(SessionKey) and SessionKey !in ("0x0", "0", "-")
+| project HostKey, ActorKey, SessionKey, SuccessTime = TimeGenerated, SourceIp;
+let FailedLogons = SecurityEvent
+| where TimeGenerated >= (testNow - lookback - sessionWindow - failureWindow)
+| where EventID == 4625
+| where isnotempty(TargetDomainName) and isnotempty(TargetUserName)
+| extend HostKey = tolower(tostring(Computer)),
+         ActorKey = tolower(strcat(tostring(TargetDomainName), @"\", tostring(TargetUserName))),
+         FailureIp = tolower(tostring(IpAddress))
+| where isnotempty(FailureIp) and FailureIp !in ("-", "::1", "127.0.0.1", "0.0.0.0")
+| project HostKey, ActorKey, FailureTime = TimeGenerated, FailureIp;
+let EncodedProcesses = SecurityEvent
+| where TimeGenerated >= (testNow - lookback)
+| where EventID == 4688
+| extend ProcessImage = tolower(tostring(NewProcessName)),
+         LowerCommand = tolower(tostring(CommandLine)),
+         ParentImage = tolower(tostring(ParentProcessName)),
+         HostKey = tolower(tostring(Computer)),
+         ActorKey = tolower(tostring(Account)),
+         SessionKey = tolower(tostring(SubjectLogonId))
+| where isnotempty(LowerCommand) and isnotempty(HostKey) and isnotempty(ActorKey)
+| where ProcessImage endswith @"\powershell.exe"
+    or ProcessImage endswith @"\pwsh.exe"
+    or ProcessImage in ("powershell.exe", "pwsh.exe")
+| where LowerCommand matches regex @"(^|\s)-(encodedcommand|enc)(\s|:|$)"
+| extend ProcessKey = hash_sha256(strcat(tostring(_ItemId), "|", tostring(TimeGenerated),
+                                          "|", Computer, "|", Account, "|", CommandLine))
+| extend UnusualParent = ParentImage matches regex @"(^|\\)(winword|excel|outlook|powerpnt|wscript|cscript|mshta)\.exe$",
+         KnownMaintenance = Computer =~ "LAB-WIN04"
+             and Account =~ @"LAB\svc-maint"
+             and ParentImage endswith @"\services.exe"
+             and LowerCommand == "powershell.exe -encodedcommand qqbcaema"
+| project ProcessKey, ProcessTime = TimeGenerated, Computer, Account,
+          NewProcessName, ParentProcessName, CommandLine, UnusualParent,
+          KnownMaintenance, HostKey, ActorKey, SessionKey;
+let LinkedProcesses = EncodedProcesses
+| join kind=leftouter ValidSessions on HostKey, ActorKey, SessionKey
+| extend EligibleSuccess = iff(isnotnull(SuccessTime)
+         and SuccessTime >= ProcessTime - sessionWindow
+         and SuccessTime <= ProcessTime, SuccessTime, datetime(null))
+| summarize arg_max(EligibleSuccess, *) by ProcessKey
+| extend SessionLinked = isnotnull(EligibleSuccess),
+         SessionIp = iff(isnotnull(EligibleSuccess), tostring(SourceIp), "")
+| extend SourceIpUsable = SessionLinked and isnotempty(SessionIp)
+         and SessionIp !in ("-", "::1", "127.0.0.1", "0.0.0.0")
+| extend SessionStatus = case(
+          not(SessionLinked), "No reliable 4624 session match",
+          not(SourceIpUsable), "Linked; source IP unavailable",
+          "Linked with source IP")
+| project ProcessKey, ProcessTime, Computer, Account, NewProcessName,
+          ParentProcessName, CommandLine, HostKey, ActorKey,
+          UnusualParent, KnownMaintenance, EligibleSuccess,
+          SessionLinked, SessionIp, SourceIpUsable, SessionStatus;
+LinkedProcesses
+| join kind=leftouter FailedLogons on HostKey, ActorKey
+| extend CorrelatedFailure = SourceIpUsable and isnotnull(FailureTime)
+    and FailureIp == SessionIp
+    and FailureTime >= EligibleSuccess - failureWindow
+    and FailureTime <= EligibleSuccess
+| summarize FailedSameIp15m = countif(CorrelatedFailure)
+    by ProcessKey, ProcessTime, Computer, Account, NewProcessName, ParentProcessName,
+       CommandLine, UnusualParent, KnownMaintenance, SessionLinked,
+       SessionIp, SessionStatus, SourceIpUsable
+| extend BasePoints = 20,
+         MaintenanceAdjustment = iff(KnownMaintenance, -15, 0),
+         ParentPoints = iff(UnusualParent, 35, iff(isempty(ParentProcessName), 10, 0)),
+         AuthPoints = case(FailedSameIp15m >= 3, 50, FailedSameIp15m >= 1, 10, 0),
+         ContextPoints = iff(SourceIpUsable, 0, 10)
+| extend RiskPoints = BasePoints + MaintenanceAdjustment + ParentPoints
+                    + AuthPoints + ContextPoints
+| extend RiskBand = case(RiskPoints >= 55, "High", RiskPoints >= 30, "Medium", "Low")
+| extend TriageDisposition = iff(SourceIpUsable, RiskBand, "Review: identity context incomplete")
+| project ProcessTime, Computer, Account, NewProcessName, ParentProcessName,
+          CommandLine, SessionLinked, SessionStatus, SessionIp,
+          FailedSameIp15m, KnownMaintenance, RiskPoints, RiskBand,
+          TriageDisposition, ProcessKey
+| order by RiskPoints desc, ProcessTime desc
+// Full outer join catches both missing expected rows and unexpected detections.
+| join kind=fullouter Expected on Computer, ProcessTime
+| extend ValidationStatus=iff(isnotnull(ExpectedPoints)
+    and isnotnull(RiskPoints)
+    and FailedSameIp15m == ExpectedFailures
+    and RiskPoints == ExpectedPoints
+    and RiskBand == ExpectedBand
+    and TriageDisposition == ExpectedDisposition,
+    "PASS", "FAIL")
+| project TestCase=coalesce(TestCase, "UNEXPECTED"), ValidationStatus,
+          Computer, ProcessTime, ExpectedFailures, FailedSameIp15m,
+          ExpectedPoints, RiskPoints, ExpectedBand, RiskBand,
+          ExpectedDisposition, TriageDisposition
+| order by ValidationStatus asc, TestCase asc
