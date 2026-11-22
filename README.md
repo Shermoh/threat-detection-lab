@@ -55,6 +55,16 @@ This [risk-based triage exercise](docs/risk-based-triage.md) combines encoded-Po
 
 [View automated test runs](https://github.com/Shermoh/threat-detection-lab/actions).
 
+## Lab 1D — Session-aware source-IP correlation
+
+The [session and IP correlation exercise](docs/session-ip-correlation.md) improves on the earlier account/host-only join by linking a **4624 successful logon** to a **4688 process** using a recent, same-host/account logon ID, then checking **4625 failures** from the same source IP before the successful logon.
+
+- [KQL demonstration](detections/kql/powershell_session_ip_correlation.kql)
+- [29 synthetic Windows logon/process events](sample-data/session_ip_correlation.csv)
+- [Python correlation model](tests/session_ip_correlation.py) and [offline tests](tests/test_session_ip_correlation.py)
+
+**Example:** P001 (approved maintenance) remains **Low (5 points)**; P002 (same approved command, three same-IP failures preceding its linked logon) is **High (55 points)**. P003's failures come from a different IP, so they **do not** count. Missing or invalid session/IP context is explicitly marked **for review**, even when the numeric score is low. This is a teaching model, not a production-grade risk score or proof of compromise.
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
@@ -64,7 +74,8 @@ This [risk-based triage exercise](docs/risk-based-triage.md) combines encoded-Po
 - [x] Add an automated Python test workflow
 - [ ] Validate KQL in Microsoft Sentinel with safe test events
 - [x] Demonstrate risk-based triage with correlated failed authentication events
-- [ ] Extend correlation with session IDs, originating IPs and broader identity telemetry
+- [x] Demonstrate session-ID and source-IP correlation with defensive negative tests
+- [ ] Validate and harden field mappings in a Sentinel workspace and enrich identity-provider evidence
 - [ ] Develop and test a Sigma rule as a separate detection
 - [ ] Build a simulated identity-compromise investigation
 
