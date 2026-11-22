@@ -65,6 +65,12 @@ The [session and IP correlation exercise](docs/session-ip-correlation.md) improv
 
 **Example:** P001 (approved maintenance) remains **Low (5 points)**; P002 (same approved command, three same-IP failures preceding its linked logon) is **High (55 points)**. P003's failures come from a different IP, so they **do not** count. Missing or invalid session/IP context is explicitly marked **for review**, even when the numeric score is low. This is a teaching model, not a production-grade risk score or proof of compromise.
 
+## Lab 1E — KQL-native synthetic validation
+
+The [KQL validation playbook](docs/kql-validation-playbook.md) provides a self-contained [Kusto datatable test query](tests/kql/session_ip_synthetic_validation.kql) with **29 fictional events** and **seven expected cases**. It tests the **actual KQL correlation logic** on inline data (rather than only relying on a Python mirror) when executed in a Kusto-compatible query editor.
+
+**Expected upon execution:** 7 `PASS`, 0 `FAIL`. **Actual KQL execution: pending.** The [test-harness contract checks](tests/test_kql_harness_contract.py) passed in GitHub Actions and guard against text drift, but they do **not** compile or execute KQL.
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
@@ -72,7 +78,9 @@ The [session and IP correlation exercise](docs/session-ip-correlation.md) improv
 - [x] Enrich detection with immediate parent-process context
 - [x] Add synthetic positive, negative, missing-data, and false-positive cases
 - [x] Add an automated Python test workflow
-- [ ] Validate KQL in Microsoft Sentinel with safe test events
+- [x] Prepare a KQL-native synthetic test harness and repeatable validation checklist
+- [ ] Execute the KQL harness in Sentinel/Kusto and capture PASS/FAIL evidence
+- [ ] Validate actual workspace field mappings with authorized telemetry
 - [x] Demonstrate risk-based triage with correlated failed authentication events
 - [x] Demonstrate session-ID and source-IP correlation with defensive negative tests
 - [ ] Validate and harden field mappings in a Sentinel workspace and enrich identity-provider evidence
