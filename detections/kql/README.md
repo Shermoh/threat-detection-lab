@@ -11,3 +11,7 @@ See [design notes](../../docs/first-detection-plan.md) and the [investigation gu
 ## Tuning demonstration
 
 [`powershell_encoded_command_tuned.kql`](powershell_encoded_command_tuned.kql) shows a **monitored** narrow maintenance downgrade for one synthetic case. It does not drop events. See the [S004 tuning exercise](../../docs/tuning-s004.md).
+
+## Authentication correlation example
+
+[`powershell_risk_correlation.kql`](powershell_risk_correlation.kql) joins encoded PowerShell process-creation records with recent 4625 logon failures on normalized host/account, then scores the combined signals. See the [full explanation](../../docs/risk-based-triage.md). **Not executed in Sentinel.**
