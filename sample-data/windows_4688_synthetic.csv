@@ -1,5 +1,5 @@
 CaseID,TimeGenerated,EventID,Computer,Account,NewProcessName,CommandLine,ExpectedMatch,GroundTruth,Scenario
-"S001","2026-11-21T12:00:00Z","4688","LAB-WIN01","LAB\jane","C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe","powershell.exe -NoProfile -EncodedCommand QQBCAEMA","true","suspicious","Office parent; encoded launch"
+"S001","2026-11-21T12:00:00Z","4688","LAB-WIN01","LAB\jane","C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe","powershell.exe -NoProfile -EncodedCommand QQBCAEMA","true","suspicious","Hypothetical Office-origin launch; parent process not included in fixture"
 "S002","2026-11-21T12:01:00Z","4688","LAB-WIN02","LAB\sam","C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe","powershell.exe -enc QQBCAEMA","true","suspicious","Short encoded-command switch"
 "S003","2026-11-21T12:02:00Z","4688","LAB-WIN03","LAB\lee","C:\Program Files\PowerShell\7\pwsh.exe","pwsh.exe -EncodedCommand:QQBCAEMA","true","suspicious","PowerShell 7 variant"
 "S004","2026-11-21T12:03:00Z","4688","LAB-WIN04","LAB\svc-maint","C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe","powershell.exe -EncodedCommand QQBCAEMA","true","benign","Legitimate maintenance using encoded invocation; expected false positive"
