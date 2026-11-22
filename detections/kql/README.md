@@ -19,3 +19,7 @@ See [design notes](../../docs/first-detection-plan.md) and the [investigation gu
 ### Session-aware source-IP experiment
 
 [`powershell_session_ip_correlation.kql`](powershell_session_ip_correlation.kql) links 4688 process `SubjectLogonId` with prior 4624 `TargetLogonId` before counting 4625 failed logons from the successful session's source IP. See [lab 1D](../../docs/session-ip-correlation.md). **Not validated in Sentinel.**
+
+### KQL-native validation instructions
+
+The [session/IP synthetic validation query](../../tests/kql/session_ip_synthetic_validation.kql) is ready to run in a Kusto engine with an inline `datatable`; expected results: seven PASS rows, no failures. See the [validation playbook](../../docs/kql-validation-playbook.md). **KQL execution has not yet been completed.**
