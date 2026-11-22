@@ -11,3 +11,7 @@ No employer/client logs, names or proprietary detection content were used.
 ## Authentication correlation dataset
 
 [`rba_auth_correlation.csv`](rba_auth_correlation.csv) adds 12 synthetic Windows 4625 failures, one 4624 success and one approved-command replay. Combine it with the existing process dataset for the [risk-based triage exercise](../docs/risk-based-triage.md).
+
+### Session and source-IP fixture
+
+[`session_ip_correlation.csv`](session_ip_correlation.csv) contains 29 fictional 4688/4624/4625 events testing same-host, same-account, session-ID, time-window and source-IP joins. Example IP addresses use documentation-only ranges. See [Lab 1D notes](../docs/session-ip-correlation.md).
