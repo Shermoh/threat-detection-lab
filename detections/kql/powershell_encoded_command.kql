@@ -1,18 +1,25 @@
-// Suspicious PowerShell encoded-command execution
+// PowerShell encoded-command detection with parent-process triage context
 // Target: Microsoft Sentinel / Azure Monitor SecurityEvent table
-// Prerequisite: Windows Security event 4688 with command-line capture enabled
-// Status: reviewed against synthetic cases using a Python parity check;
-//         NOT executed in a live Microsoft Sentinel environment
-// ATT&CK: T1059.001 - PowerShell
+// Required: Event ID 4688, captured command line, NewProcessName
+// Optional: ParentProcessName; missing values remain visible for review.
+// ATT&CK: T1059.001; Python parity checks only (NOT live KQL-tested)
 SecurityEvent
 | where TimeGenerated >= ago(7d)
 | where EventID == 4688
 | extend ProcessImage = tolower(tostring(NewProcessName)),
-         LowerCommand = tolower(tostring(CommandLine))
+         LowerCommand = tolower(tostring(CommandLine)),
+         ParentImage = tolower(tostring(ParentProcessName))
 | where isnotempty(LowerCommand)
 | where ProcessImage endswith @"\powershell.exe"
     or ProcessImage endswith @"\pwsh.exe"
     or ProcessImage in ("powershell.exe", "pwsh.exe")
 | where LowerCommand matches regex @"(^|\s)-(encodedcommand|enc)(\s|:|$)"
-| project TimeGenerated, Computer, Account, NewProcessName, CommandLine, EventID
+| extend UnusualParent = ParentImage matches regex @"(^|\\)(winword|excel|outlook|powerpnt|wscript|cscript|mshta)\.exe$"
+| extend TriageCategory = case(
+    isempty(ParentImage), "Review - parent unavailable",
+    UnusualParent, "Elevated - unusual parent",
+    "Review - encoded command"
+)
+| project TimeGenerated, Computer, Account, NewProcessName, ParentProcessName,
+          CommandLine, TriageCategory, EventID
 | order by TimeGenerated desc
