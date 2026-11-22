@@ -1,53 +1,56 @@
 # Threat Detection Lab
 
-A practical security portfolio repository focused on **SIEM detection engineering, log analysis and investigation methodology**. All demonstration data is synthetic.
+A hands-on security portfolio project covering **SIEM detection engineering, security investigation, and detection validation**. All data is synthetic.
 
-## Lab 1: Suspicious PowerShell encoded-command execution
+## Lab 1: PowerShell encoded-command execution with process context
 
-**Current status:** Detection query and synthetic fixture published; offline predicate tests implemented. **Not executed in a live Microsoft Sentinel workspace.**
+**Status:** Query, synthetic data, and offline Python tests available. **The KQL has not been executed in a live Microsoft Sentinel workspace.**
 
-| Component | Where to find it |
+| Resource | Contents |
 | --- | --- |
-| Sentinel KQL detection | [`detections/kql/powershell_encoded_command.kql`](detections/kql/powershell_encoded_command.kql) |
-| Synthetic Windows 4688 events | [`sample-data/windows_4688_synthetic.csv`](sample-data/windows_4688_synthetic.csv) |
-| Offline test suite | [`tests/test_detection.py`](tests/test_detection.py) |
-| Design notes & sources | [`docs/first-detection-plan.md`](docs/first-detection-plan.md) |
-| Investigation guide | [`docs/investigation-guide.md`](docs/investigation-guide.md) |
+| [KQL detection](detections/kql/powershell_encoded_command.kql) | Queries Windows Security Event 4688 and adds parent-process triage context |
+| [Synthetic events](sample-data/windows_4688_synthetic.csv) | 20 illustrative benign, suspicious, and incomplete-context cases |
+| [Python tests](tests/test_detection.py) | Tests a Python mirror of filtering and triage decisions |
+| [Detection design](docs/first-detection-plan.md) | Schema, assumptions, test cases, limitations and references |
+| [Investigation guide](docs/investigation-guide.md) | Analyst triage workflow and tuning considerations |
 
-### What it detects
+### Detection workflow
 
-The query examines Windows **Event ID 4688** process-creation records in Microsoft Sentinel's `SecurityEvent` table, selects `powershell.exe` and `pwsh.exe`, and looks for `-EncodedCommand` or `-enc` switches. These are indicators for **investigation**, not proof of malware.
+1. Filter the Microsoft Sentinel `SecurityEvent` table for Windows **Event ID 4688**.
+2. Identify `powershell.exe` or `pwsh.exe` launched with `-EncodedCommand` or `-enc`.
+3. Examine `ParentProcessName` to prioritize unexpected parents (Office applications and selected script hosts), with a separate category for missing parent information.
+4. Investigate and correlate further evidence. **Encoded PowerShell or an unusual parent does not establish maliciousness.**
 
-**Prerequisite:** command-line auditing must be enabled for event 4688 and the events ingested into `SecurityEvent`.
+**Data prerequisite:** Process creation auditing with command-line capture and correctly mapped `SecurityEvent` data.
 
-### Reproduce the offline checks
+### Run offline tests
 
-Requires Python 3.8+; no external packages.
+Requires Python 3.8+; no third-party packages.
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-**Fixture results:** 14 synthetic events, 5 detection matches, including 1 legitimate use (false positive). One suspicious fixture using a renamed executable is deliberately not detected (false negative). **These are not real-world performance metrics.**
+The curated dataset has **20** fictional events, including **9** expected matches: **4 elevated**, **4 standard review**, and **1 with parent information unavailable**. Among the matches, two are deliberately benign (false positives), while one suspicious renamed executable is not matched (false negative). **These synthetic counts are not production performance metrics.**
 
-The Python tests check an equivalent detection predicate against CSV records; they are **not a KQL execution test**. Platform integration testing is still required.
+**Test limitation:** Python tests mirror the query's predicate and triage logic; they **do not execute KQL**. Live Sentinel validation is still required.
 
 ## Roadmap
 
-- [x] Structure repository and explain methodology
-- [x] Create synthetic positive and negative Windows process events
-- [x] Write initial Sentinel KQL detection for a specified schema
-- [x] Verify predicate against offline fixtures
-- [x] Document false positives, limitations and investigation steps
-- [ ] Validate KQL in a Sentinel workspace using safe test data
-- [ ] Add context enrichment and refine detection logic
-- [ ] Develop and test a separate Sigma variant
-- [ ] Build an identity-compromise investigation lab
+- [x] Structure repository and document safe data use
+- [x] Implement initial encoded-command detection
+- [x] Enrich detection with immediate parent-process context
+- [x] Add synthetic positive, negative, missing-data, and false-positive cases
+- [x] Add an automated Python test workflow
+- [ ] Validate KQL in Microsoft Sentinel with safe test events
+- [ ] Expand detection coverage and tune using corroborating telemetry
+- [ ] Develop and test a Sigma rule as a separate detection
+- [ ] Build a simulated identity-compromise investigation
 
-## Scope and safety
+## Safety and data handling
 
-**No production logs, employer/customer information, private detection rules or credentials.** All hostnames, accounts and events are fictional. The lab prioritizes transparent testing and documented limitations over unverified claims.
+Do not commit employer/client telemetry, proprietary detection logic, incident artifacts, secrets or personal information. Hosts, accounts, and command lines in this repository are invented for training.
 
-## Background
+## Purpose
 
-Built to demonstrate and deepen hands-on skills in SOC/MDR investigations, threat detection, security analytics and detection improvement.
+Connect practical MDR/SOC investigation experience with reproducible detection engineering: explicit assumptions, readable detection logic, test cases, and documented uncertainty.
