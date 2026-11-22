@@ -1,0 +1,94 @@
+// Lab 1D: Session-aware PowerShell triage with source-IP correlation.
+// Windows SecurityEvent: process creation 4688, success 4624, failure 4625.
+// 4624 TargetLogonId -> 4688 SubjectLogonId (same host + account).
+// 4625 failures correlate by successful 4624 source IP, NOT by session ID.
+// Educational KQL; NOT executed in Microsoft Sentinel. Validate schema first.
+// Note: account/host/IP relationships do not prove attack causation.
+let lookback = 7d;
+let sessionWindow = 30m;
+let failureWindow = 15m;
+let ValidSessions = SecurityEvent
+| where TimeGenerated >= ago(lookback + sessionWindow)
+| where EventID == 4624
+| where isnotempty(TargetDomainName) and isnotempty(TargetUserName)
+| extend HostKey = tolower(tostring(Computer)),
+         ActorKey = tolower(strcat(tostring(TargetDomainName), @"\", tostring(TargetUserName))),
+         SessionKey = tolower(tostring(TargetLogonId)),
+         SourceIp = tolower(tostring(IpAddress))
+| where isnotempty(SessionKey) and SessionKey !in ("0x0", "0", "-")
+| project HostKey, ActorKey, SessionKey, SuccessTime = TimeGenerated, SourceIp;
+let FailedLogons = SecurityEvent
+| where TimeGenerated >= ago(lookback + sessionWindow + failureWindow)
+| where EventID == 4625
+| where isnotempty(TargetDomainName) and isnotempty(TargetUserName)
+| extend HostKey = tolower(tostring(Computer)),
+         ActorKey = tolower(strcat(tostring(TargetDomainName), @"\", tostring(TargetUserName))),
+         FailureIp = tolower(tostring(IpAddress))
+| where isnotempty(FailureIp) and FailureIp !in ("-", "::1", "127.0.0.1", "0.0.0.0")
+| project HostKey, ActorKey, FailureTime = TimeGenerated, FailureIp;
+let EncodedProcesses = SecurityEvent
+| where TimeGenerated >= ago(lookback)
+| where EventID == 4688
+| extend ProcessImage = tolower(tostring(NewProcessName)),
+         LowerCommand = tolower(tostring(CommandLine)),
+         ParentImage = tolower(tostring(ParentProcessName)),
+         HostKey = tolower(tostring(Computer)),
+         ActorKey = tolower(tostring(Account)),
+         SessionKey = tolower(tostring(SubjectLogonId))
+| where isnotempty(LowerCommand) and isnotempty(HostKey) and isnotempty(ActorKey)
+| where ProcessImage endswith @"\powershell.exe"
+    or ProcessImage endswith @"\pwsh.exe"
+    or ProcessImage in ("powershell.exe", "pwsh.exe")
+| where LowerCommand matches regex @"(^|\s)-(encodedcommand|enc)(\s|:|$)"
+| extend ProcessKey = hash_sha256(strcat(tostring(_ItemId), "|", tostring(TimeGenerated),
+                                          "|", Computer, "|", Account, "|", CommandLine))
+| extend UnusualParent = ParentImage matches regex @"(^|\\)(winword|excel|outlook|powerpnt|wscript|cscript|mshta)\.exe$",
+         KnownMaintenance = Computer =~ "LAB-WIN04"
+             and Account =~ @"LAB\svc-maint"
+             and ParentImage endswith @"\services.exe"
+             and LowerCommand == "powershell.exe -encodedcommand qqbcaema"
+| project ProcessKey, ProcessTime = TimeGenerated, Computer, Account,
+          NewProcessName, ParentProcessName, CommandLine, UnusualParent,
+          KnownMaintenance, HostKey, ActorKey, SessionKey;
+let LinkedProcesses = EncodedProcesses
+| join kind=leftouter ValidSessions on HostKey, ActorKey, SessionKey
+| extend EligibleSuccess = iff(isnotnull(SuccessTime)
+         and SuccessTime >= ProcessTime - sessionWindow
+         and SuccessTime <= ProcessTime, SuccessTime, datetime(null))
+| summarize arg_max(EligibleSuccess, *) by ProcessKey
+| extend SessionLinked = isnotnull(EligibleSuccess),
+         SessionIp = iff(isnotnull(EligibleSuccess), tostring(SourceIp), "")
+| extend SourceIpUsable = SessionLinked and isnotempty(SessionIp)
+         and SessionIp !in ("-", "::1", "127.0.0.1", "0.0.0.0")
+| extend SessionStatus = case(
+          not(SessionLinked), "No reliable 4624 session match",
+          not(SourceIpUsable), "Linked; source IP unavailable",
+          "Linked with source IP")
+| project ProcessKey, ProcessTime, Computer, Account, NewProcessName,
+          ParentProcessName, CommandLine, HostKey, ActorKey,
+          UnusualParent, KnownMaintenance, EligibleSuccess,
+          SessionLinked, SessionIp, SourceIpUsable, SessionStatus;
+LinkedProcesses
+| join kind=leftouter FailedLogons on HostKey, ActorKey
+| extend CorrelatedFailure = SourceIpUsable and isnotnull(FailureTime)
+    and FailureIp == SessionIp
+    and FailureTime >= EligibleSuccess - failureWindow
+    and FailureTime <= EligibleSuccess
+| summarize FailedSameIp15m = countif(CorrelatedFailure)
+    by ProcessKey, ProcessTime, Computer, Account, NewProcessName, ParentProcessName,
+       CommandLine, UnusualParent, KnownMaintenance, SessionLinked,
+       SessionIp, SessionStatus, SourceIpUsable
+| extend BasePoints = 20,
+         MaintenanceAdjustment = iff(KnownMaintenance, -15, 0),
+         ParentPoints = iff(UnusualParent, 35, iff(isempty(ParentProcessName), 10, 0)),
+         AuthPoints = case(FailedSameIp15m >= 3, 50, FailedSameIp15m >= 1, 10, 0),
+         ContextPoints = iff(SourceIpUsable, 0, 10)
+| extend RiskPoints = BasePoints + MaintenanceAdjustment + ParentPoints
+                    + AuthPoints + ContextPoints
+| extend RiskBand = case(RiskPoints >= 55, "High", RiskPoints >= 30, "Medium", "Low")
+| extend TriageDisposition = iff(SourceIpUsable, RiskBand, "Review: identity context incomplete")
+| project ProcessTime, Computer, Account, NewProcessName, ParentProcessName,
+          CommandLine, SessionLinked, SessionStatus, SessionIp,
+          FailedSameIp15m, KnownMaintenance, RiskPoints, RiskBand,
+          TriageDisposition, ProcessKey
+| order by RiskPoints desc, ProcessTime desc
