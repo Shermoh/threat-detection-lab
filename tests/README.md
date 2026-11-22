@@ -19,3 +19,9 @@ This Python standard-library suite checks all **20** synthetic fixtures, expecte
 ### Session/IP correlation suite
 
 [`test_session_ip_correlation.py`](test_session_ip_correlation.py) validates a Python model of 4688-to-4624 session links and 4625 same-IP failures. It also verifies time windows, account/host mismatch, invalid IDs, missing IPs, and the safe handling of unmatched sessions. GitHub Actions runs these tests on changes. The tests **do not execute KQL**.
+
+### KQL-native validation (manual execution)
+
+[`kql/session_ip_synthetic_validation.kql`](kql/session_ip_synthetic_validation.kql) contains an inline KQL `datatable` with 29 fake events, the same session/IP correlation query logic, and seven expected outcomes. Run the **entire** file in a Kusto query editor to check for 7 PASS and 0 FAIL. Follow the [playbook](../docs/kql-validation-playbook.md).
+
+[`test_kql_harness_contract.py`](test_kql_harness_contract.py) verifies the inline test remains synchronized with the maintained KQL logic. **The contract and Python tests are not a live KQL run.**
