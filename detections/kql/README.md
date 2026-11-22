@@ -15,3 +15,7 @@ See [design notes](../../docs/first-detection-plan.md) and the [investigation gu
 ## Authentication correlation example
 
 [`powershell_risk_correlation.kql`](powershell_risk_correlation.kql) joins encoded PowerShell process-creation records with recent 4625 logon failures on normalized host/account, then scores the combined signals. See the [full explanation](../../docs/risk-based-triage.md). **Not executed in Sentinel.**
+
+### Session-aware source-IP experiment
+
+[`powershell_session_ip_correlation.kql`](powershell_session_ip_correlation.kql) links 4688 process `SubjectLogonId` with prior 4624 `TargetLogonId` before counting 4625 failed logons from the successful session's source IP. See [lab 1D](../../docs/session-ip-correlation.md). **Not validated in Sentinel.**
