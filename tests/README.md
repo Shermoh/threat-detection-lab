@@ -1,4 +1,4 @@
-# Offline tests
+# Offline detection tests
 
 Run from the repository root:
 
@@ -6,4 +6,6 @@ Run from the repository root:
 python -m unittest discover -s tests -v
 ```
 
-Tests use Python's standard library and compare the expected flags in [synthetic CSV fixtures](../sample-data/windows_4688_synthetic.csv) to a Python mirror of the KQL's filter. They include a known false positive and renamed-executable false negative. They **do not** execute the KQL engine.
+This Python standard-library suite checks all **20** synthetic fixtures, expected match flags, process-parent-based triage categories, missing parent information, known benign matches and a known missed renamed executable.
+
+**Important:** This tests an offline Python mirror of the detection. It does **not** run KQL or prove the detection works in Sentinel.
