@@ -1,29 +1,34 @@
-# Investigating PowerShell encoded-command detections
+# Investigating encoded-command PowerShell alerts
 
-**Detection:** [`detections/kql/powershell_encoded_command.kql`](../detections/kql/powershell_encoded_command.kql)
+**Detection:** [PowerShell encoded-command KQL](../detections/kql/powershell_encoded_command.kql)
 
-## Triage workflow
+## Analyst triage workflow
 
-1. **Verify the event.** Confirm event ID 4688, full process image, command line, host, account, timestamp and event source.
-2. **Examine execution context.** Review parent process, user session, process ancestry and whether the process fits documented administration or automation. Note: parent process is not included in the current KQL output.
-3. **Inspect the encoded argument safely.** If authorized, decode the Base64 text as UTF-16LE for inspection, **never execute it**, and retain the original evidence.
-4. **Correlate telemetry.** Look for related sign-ins, process creations, script block events (if collected), network connections, endpoint alerts and persistence indicators.
-5. **Assess scope and intent.** A flag alone is insufficient to conclude compromise. Check for legitimate orchestration, scheduled jobs and approved management software.
-6. **Document and escalate.** Record the evidence, confidence, affected assets and recommended next actions under the organization's response procedures.
+1. **Verify the event.** Check Event ID, process image, command line, account, device and timestamp.
+2. **Review the parent context.** Inspect `ParentProcessName` and the assigned `TriageCategory`. Office and script-host ancestry deserve attention, but don't by themselves prove compromise.
+3. **Confirm the actual process tree.** Correlate with endpoint data and other process-creation events, especially if the parent field is missing or inconsistent.
+4. **Analyze command content safely.** If authorized, extract Base64 content and decode as UTF-16LE for inspection only; **do not execute decoded output**. Preserve evidence and respect sensitive-data handling requirements.
+5. **Correlate supporting events.** Review additional process starts, sign-ins, script block logging (if available), network connections and endpoint detections.
+6. **Evaluate legitimacy and scope.** Compare with change records and approved automation. An encoded argument or unusual parent is a hypothesis to investigate.
+7. **Record and escalate appropriately.** Document evidence, assumptions, impact, uncertainty and recommendations. Follow actual incident-response authority.
 
-## What the lab shows
+## Outcomes in our fictional dataset
 
-The synthetic fixture contains **14** events. The filter raises **5** matches: **4** labeled suspicious and **1** benign (an expected false positive). It misses **1** suspicious event with a renamed executable. These values are fixture examples, **not** production precision, recall or benchmark results.
+- 20 sample events; **9** match the filter (4 elevated, 4 routine review, 1 parent unavailable).
+- **2** matched events represent legitimate maintenance (intentional false positives).
+- **1** suspicious renamed executable is missed (intentional false negative).
 
-## Limitations
+The numbers illustrate test cases, **not actual customer environments or production detection metrics**.
 
-- `-EncodedCommand` is not inherently malicious. Legitimate administrative tools can use it.
-- Renamed PowerShell binaries, alternate switch abbreviations, and other execution mechanisms are outside the current rule's scope.
-- If Windows does not capture process command lines, this detection cannot evaluate the argument.
-- `SecurityEvent` is not the same table as `DeviceProcessEvents` or `WindowsEvent`; field mappings require separate queries.
-- The Python tests verify an offline logical equivalent using curated fixtures. **The KQL has not been executed in an Azure/Sentinel workspace** and needs platform validation before operational use.
-- Command-line logs can contain secrets or personal data. Apply access controls and retention policies; do not publish raw enterprise events.
+## Technical and operational limitations
 
-## Suggested next iteration
+- The KQL covers `SecurityEvent` event 4688 and requires collected command-line arguments.
+- The parent-process name is a single field, not a complete validated process tree; it may be absent or misleading.
+- Renamed executables, alternate invocations and PowerShell without an identifiable process are not covered.
+- No aggressive service-account or host exclusion has been applied. First demonstrate that exclusions are safe and monitor their effect.
+- The Python test suite checks a mirror of the KQL filtering. **Actual Sentinel integration remains untested.**
+- Command-line evidence may contain sensitive information; avoid posting real events or authentication details publicly.
 
-Add parent-process enrichment and tested context-based exclusions after collecting representative benign and malicious scenarios. Avoid suppressing an entire admin account or host without evidence.
+## Next tuning exercise
+
+Compare cases where unusual parent processes occur legitimately against suspicious parent-child chains. Add corroborating telemetry and narrowly justified tuning, not blanket suppression.
