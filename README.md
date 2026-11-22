@@ -43,6 +43,18 @@ The [tuning exercise](docs/tuning-s004.md) explores your suggestion to match a s
 
 The example also demonstrates a limitation: an attacker able to reproduce all the same observable fields cannot be distinguished by this simple allowlist. It is not a recommended production suppression rule.
 
+## Lab 1C — Correlated authentication risk signals
+
+This [risk-based triage exercise](docs/risk-based-triage.md) combines encoded-PowerShell process events with **Windows 4625 failed logons** for the same host/account during the preceding 15 minutes. It includes:
+
+- [Sentinel KQL correlation query](detections/kql/powershell_risk_correlation.kql)
+- [Additional synthetic authentication and replay events](sample-data/rba_auth_correlation.csv)
+- [Offline scoring implementation](tests/risk_scoring.py) and [unit tests](tests/test_risk_scoring.py)
+
+**Key example:** S004 remains **Low (5 points)** as routine maintenance; **R001**, which uses the *same approved host, account, parent and command*, becomes **High (55 points)** when three prior failed logons are correlated. The score is an illustrative triage heuristic, **not a measured probability of compromise**. Field mappings, correlation quality and KQL syntax require platform testing.
+
+[View automated test runs](https://github.com/Shermoh/threat-detection-lab/actions).
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
@@ -51,7 +63,8 @@ The example also demonstrates a limitation: an attacker able to reproduce all th
 - [x] Add synthetic positive, negative, missing-data, and false-positive cases
 - [x] Add an automated Python test workflow
 - [ ] Validate KQL in Microsoft Sentinel with safe test events
-- [ ] Expand detection coverage and tune using corroborating telemetry
+- [x] Demonstrate risk-based triage with correlated failed authentication events
+- [ ] Extend correlation with session IDs, originating IPs and broader identity telemetry
 - [ ] Develop and test a Sigma rule as a separate detection
 - [ ] Build a simulated identity-compromise investigation
 
