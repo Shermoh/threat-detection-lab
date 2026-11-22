@@ -1,0 +1,18 @@
+// Suspicious PowerShell encoded-command execution
+// Target: Microsoft Sentinel / Azure Monitor SecurityEvent table
+// Prerequisite: Windows Security event 4688 with command-line capture enabled
+// Status: reviewed against synthetic cases using a Python parity check;
+//         NOT executed in a live Microsoft Sentinel environment
+// ATT&CK: T1059.001 - PowerShell
+SecurityEvent
+| where TimeGenerated >= ago(7d)
+| where EventID == 4688
+| extend ProcessImage = tolower(tostring(NewProcessName)),
+         LowerCommand = tolower(tostring(CommandLine))
+| where isnotempty(LowerCommand)
+| where ProcessImage endswith @"\powershell.exe"
+    or ProcessImage endswith @"\pwsh.exe"
+    or ProcessImage in ("powershell.exe", "pwsh.exe")
+| where LowerCommand matches regex @"(^|\s)-(encodedcommand|enc)(\s|:|$)"
+| project TimeGenerated, Computer, Account, NewProcessName, CommandLine, EventID
+| order by TimeGenerated desc
