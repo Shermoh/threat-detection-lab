@@ -1,7 +1,9 @@
-# Synthetic Windows event 4688 fixtures
+# Synthetic Windows 4688 event fixtures
 
-[`windows_4688_synthetic.csv`](windows_4688_synthetic.csv) contains 14 made-up event records for the encoded-command detection. No employer/customer telemetry is included.
+[Download or review the synthetic CSV](windows_4688_synthetic.csv). It includes **20** fictional events for testing encoded PowerShell detection and optional parent-process context.
 
-Each row includes `ExpectedMatch` (whether the detection *should fire*) and `GroundTruth` (the scenario's intended benign/suspicious label). A match does **not** automatically mean malicious.
+The columns `ExpectedMatch`, `ExpectedPriority`, `GroundTruth` and `Scenario` are **lab labels**, not fields that exist in the Microsoft Sentinel `SecurityEvent` table.
 
-Use `python -m unittest discover -s tests -v` from the repository root to validate the offline predicate against these fixtures.
+The data includes benign administrative encoded commands, missing parent context, Office/script-host launch patterns and a known missed renamed executable.
+
+No employer/client logs, names or proprietary detection content were used.
