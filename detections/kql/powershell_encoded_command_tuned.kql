@@ -1,0 +1,31 @@
+// DEMONSTRATION ONLY: narrow, monitored tuning for a validated maintenance case.
+// Source: Microsoft Sentinel SecurityEvent, Windows Security Event ID 4688
+// A match remains visible in output. This does NOT suppress or discard telemetry.
+// The LAB-* values are fictitious and MUST NOT be copied into production allowlists.
+// Query NOT executed in a live Sentinel workspace.
+SecurityEvent
+| where TimeGenerated >= ago(7d)
+| where EventID == 4688
+| extend ProcessImage = tolower(tostring(NewProcessName)),
+         LowerCommand = tolower(tostring(CommandLine)),
+         ParentImage = tolower(tostring(ParentProcessName))
+| where isnotempty(LowerCommand)
+| where ProcessImage endswith @"\powershell.exe"
+    or ProcessImage endswith @"\pwsh.exe"
+    or ProcessImage in ("powershell.exe", "pwsh.exe")
+| where LowerCommand matches regex @"(^|\s)-(encodedcommand|enc)(\s|:|$)"
+| extend KnownMaintenance =
+         Computer =~ "LAB-WIN04"
+     and Account =~ @"LAB\svc-maint"
+     and ParentImage endswith @"\services.exe"
+     and LowerCommand == "powershell.exe -encodedcommand qqbcaema"
+| extend UnusualParent = ParentImage matches regex @"(^|\\)(winword|excel|outlook|powerpnt|wscript|cscript|mshta)\.exe$"
+| extend TriageCategory = case(
+    KnownMaintenance, "Known maintenance - monitor",
+    isempty(ParentImage), "Review - parent unavailable",
+    UnusualParent, "Elevated - unusual parent",
+    "Review - encoded command"
+)
+| project TimeGenerated, Computer, Account, NewProcessName, ParentProcessName,
+          CommandLine, KnownMaintenance, TriageCategory, EventID
+| order by TimeGenerated desc
