@@ -1,7 +1,9 @@
-# Microsoft Sentinel KQL
+# Microsoft Sentinel KQL detection
 
-- [`powershell_encoded_command.kql`](powershell_encoded_command.kql) — filters Windows process-creation Event ID 4688 for encoded PowerShell command arguments.
+[PowerShell encoded-command rule](powershell_encoded_command.kql) filters `SecurityEvent` records for Event ID 4688 and `-EncodedCommand` / `-enc` use, and categorizes matches using `ParentProcessName`.
 
-**Target schema:** `SecurityEvent` in Azure Monitor / Microsoft Sentinel. This query has **not** been executed in a live Sentinel workspace; the provided Python tests mirror its logic offline and do not validate KQL execution.
+The parent-process category supports triage; it is **not a determination of maliciousness**.
 
-See the [design notes](../../docs/first-detection-plan.md) and [investigation guide](../../docs/investigation-guide.md).
+See [design notes](../../docs/first-detection-plan.md) and the [investigation guide](../../docs/investigation-guide.md).
+
+**Validation:** Offline Python parity tests only. The KQL query has not been executed in a Microsoft Sentinel workspace.
