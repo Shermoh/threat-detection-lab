@@ -1,0 +1,58 @@
+// Educational risk-based triage correlation (NOT a calibrated risk model).
+// Target table: SecurityEvent. Process: 4688, failures: 4625.
+// Correlates same Computer and normalized account within 15 minutes BEFORE process.
+// TargetDomainName+TargetUserName (4625) are compared with Account (4688).
+// This is an approximate join, NOT proof of the same session or attack.
+// Required: command-line auditing for process creation.
+// Not executed in a live Microsoft Sentinel workspace.
+let lookback = 7d;
+let authWindow = 15m;
+let AuthFailures = SecurityEvent
+    | where TimeGenerated >= ago(lookback + authWindow)
+    | where EventID == 4625
+    | where isnotempty(TargetDomainName) and isnotempty(TargetUserName)
+    | extend HostKey = tolower(tostring(Computer)),
+             ActorKey = tolower(strcat(tostring(TargetDomainName), @"\", tostring(TargetUserName)))
+    | project HostKey, ActorKey, FailureTime = TimeGenerated;
+let EncodedProcesses = SecurityEvent
+    | where TimeGenerated >= ago(lookback)
+    | where EventID == 4688
+    | extend ProcessImage = tolower(tostring(NewProcessName)),
+             LowerCommand = tolower(tostring(CommandLine)),
+             ParentImage = tolower(tostring(ParentProcessName))
+    | where isnotempty(LowerCommand)
+    | where ProcessImage endswith @"\powershell.exe"
+        or ProcessImage endswith @"\pwsh.exe"
+        or ProcessImage in ("powershell.exe", "pwsh.exe")
+    | where LowerCommand matches regex @"(^|\s)-(encodedcommand|enc)(\s|:|$)"
+    | extend HostKey = tolower(tostring(Computer)), ActorKey = tolower(tostring(Account))
+    | where isnotempty(HostKey) and isnotempty(ActorKey)
+    | extend UnusualParent = ParentImage matches regex @"(^|\\)(winword|excel|outlook|powerpnt|wscript|cscript|mshta)\.exe$"
+    | extend KnownMaintenance =
+        Computer =~ "LAB-WIN04"
+        and Account =~ @"LAB\svc-maint"
+        and ParentImage endswith @"\services.exe"
+        and LowerCommand == "powershell.exe -encodedcommand qqbcaema"
+    | project ProcessTime=TimeGenerated, ProcessRecordId=tostring(EventRecordId),
+              Computer, Account, NewProcessName, ParentProcessName, CommandLine,
+              UnusualParent, KnownMaintenance, HostKey, ActorKey;
+EncodedProcesses
+| join kind=leftouter AuthFailures on HostKey, ActorKey
+| extend InWindow = isnotnull(FailureTime)
+                    and FailureTime >= ProcessTime - authWindow
+                    and FailureTime <= ProcessTime
+| summarize FailedLogons15m = countif(InWindow)
+    by ProcessTime, ProcessRecordId, Computer, Account, NewProcessName,
+       ParentProcessName, CommandLine, UnusualParent, KnownMaintenance
+| extend BasePoints = 20,
+         MaintenanceAdjustment = iff(KnownMaintenance, -15, 0),
+         ParentPoints = iff(UnusualParent, 35, iff(isempty(ParentProcessName), 10, 0)),
+         AuthPoints = case(FailedLogons15m >= 3, 50,
+                           FailedLogons15m >= 1, 10, 0)
+| extend RiskPoints = BasePoints + MaintenanceAdjustment + ParentPoints + AuthPoints
+| extend RiskBand = case(RiskPoints >= 55, "High", RiskPoints >= 30, "Medium", "Low")
+| project ProcessTime, Computer, Account, NewProcessName, ParentProcessName,
+          CommandLine, KnownMaintenance, FailedLogons15m,
+          BasePoints, MaintenanceAdjustment, ParentPoints, AuthPoints,
+          RiskPoints, RiskBand, ProcessRecordId
+| order by RiskPoints desc, ProcessTime desc
