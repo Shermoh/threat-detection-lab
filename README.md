@@ -35,6 +35,14 @@ The curated dataset has **20** fictional events, including **9** expected matche
 
 **Test limitation:** Python tests mirror the query's predicate and triage logic; they **do not execute KQL**. Live Sentinel validation is still required.
 
+## Lab 1B — Narrow maintenance tuning
+
+The [tuning exercise](docs/tuning-s004.md) explores your suggestion to match a specific verified command rather than ignore all encoded PowerShell. It includes a [monitored KQL variant](detections/kql/powershell_encoded_command_tuned.kql) and [offline tests](tests/test_tuning.py).
+
+**S004** is labeled `Known maintenance - monitor` only when its host, service account, parent process and exact command match. It **remains visible** in results; the original detection is unchanged. **S016** and all other matches still receive their ordinary investigation categories.
+
+The example also demonstrates a limitation: an attacker able to reproduce all the same observable fields cannot be distinguished by this simple allowlist. It is not a recommended production suppression rule.
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
