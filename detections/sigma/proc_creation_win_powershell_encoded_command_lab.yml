@@ -1,0 +1,32 @@
+title: PowerShell Encoded Command Invocation - Detection Lab
+id: f771ad40-0e22-4cd8-a460-73334e4979f2
+status: experimental
+description: >
+    Detects Windows PowerShell or PowerShell 7 launched with -EncodedCommand
+    or -enc. This is an investigation lead, not proof of malicious activity.
+references:
+    - 'https://attack.mitre.org/techniques/T1059/001/'
+author: 'Shermoh'
+date: 2026-11-22
+tags:
+    - attack.execution
+    - attack.t1059.001
+logsource:
+    category: process_creation
+    product: windows
+    definition: >
+        Requires process creation telemetry with full executable image and
+        command-line fields, for example Sysmon Event ID 1 or Windows Security
+        Event ID 4688 with command-line auditing configured.
+detection:
+    selection_image:
+        Image|endswith:
+            - '\powershell.exe'
+            - '\pwsh.exe'
+    selection_encoded:
+        CommandLine|re: '(?i)(?:^|\s)-(?:encodedcommand|enc)(?:\s|:|$)'
+    condition: selection_image and selection_encoded
+falsepositives:
+    - Approved administrative automation using encoded PowerShell commands
+    - Deployment and endpoint management tools using encoded PowerShell
+level: medium
