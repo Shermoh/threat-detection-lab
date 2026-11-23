@@ -1,0 +1,2 @@
+SecurityEvent
+| where (NewProcessName endswith "\\powershell.exe" or NewProcessName endswith "\\pwsh.exe") and CommandLine matches regex "(?i)(?:^|\\s)-(?:encodedcommand|enc)(?:\\s|:|$)"
