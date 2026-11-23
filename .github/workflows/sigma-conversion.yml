@@ -1,0 +1,29 @@
+name: Sigma-to-KQL backend conversion
+
+on:
+  push:
+    paths:
+      - "detections/sigma/**"
+      - "tools/convert_sigma_to_kql.py"
+      - ".github/workflows/sigma-conversion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install actual pySigma Azure Monitor Kusto backend
+        run: |
+          python -m pip install "pysigma-backend-kusto==1.0.1"
+      - name: Generate actual KQL through pySigma backend
+        run: |
+          python tools/convert_sigma_to_kql.py
