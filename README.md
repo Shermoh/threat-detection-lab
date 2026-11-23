@@ -25,7 +25,7 @@ A hands-on security portfolio project covering **SIEM detection engineering, sec
 
 ### Run offline tests
 
-Requires Python 3.8+; no third-party packages.
+For the complete suite, use Python 3.11+ and install the pinned pySigma dependency with `python -m pip install -r requirements-dev.txt`.
 
 ```bash
 python -m unittest discover -s tests -v
@@ -71,6 +71,19 @@ The [KQL validation playbook](docs/kql-validation-playbook.md) provides a self-c
 
 **Observed KQL execution:** **7 `PASS`, 0 `FAIL`** on **2026-11-23 04:04 UTC**, using an inline synthetic dataset in the Azure Data Explorer/Kusto editor. See [recorded validation results](docs/kql-validation-results-2026-11-23.md). The [test-harness contract checks](tests/test_kql_harness_contract.py) also passed in GitHub Actions. **Real Microsoft Sentinel `SecurityEvent` integration remains untested.**
 
+## Lab 1F — Sigma encoded-command detection
+
+The [Sigma rule](detections/sigma/proc_creation_win_powershell_encoded_command_lab.yml) expresses the **baseline encoded PowerShell execution logic** using a vendor-neutral Windows process-creation logsource. Its [pySigma parser and fixture tests](tests/test_sigma_rule.py) compare the rule's image and command-line selections against the **20 synthetic process events** (expected: **9 matches, 11 nonmatches**, including two benign matches).
+
+The [Sigma lab write-up](docs/sigma-detection.md) documents why Sigma is not the same as the Sentinel-specific KQL implementation, how source mapping works, and why **parsing plus offline tests do not establish SIEM-backend correctness**. GitHub Actions runs pySigma parsing and unit tests, but converted searches have not yet been executed in a target SIEM.
+
+**Local test setup (Python 3.11+):**
+
+```bash
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v
+```
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
@@ -84,7 +97,8 @@ The [KQL validation playbook](docs/kql-validation-playbook.md) provides a self-c
 - [x] Demonstrate risk-based triage with correlated failed authentication events
 - [x] Demonstrate session-ID and source-IP correlation with defensive negative tests
 - [ ] Validate and harden field mappings in a Sentinel workspace and enrich identity-provider evidence
-- [ ] Develop and test a Sigma rule as a separate detection
+- [x] Develop a Sigma rule and validate YAML parsing plus offline fixture behaviour
+- [ ] Convert Sigma for a selected SIEM backend and validate mapped query execution
 - [ ] Build a simulated identity-compromise investigation
 
 ## Safety and data handling
