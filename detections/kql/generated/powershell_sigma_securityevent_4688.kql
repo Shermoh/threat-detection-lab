@@ -1,0 +1,8 @@
+// Source: Sigma -> pySigma 1.5.1 -> pySigma Kusto backend 1.0.1
+// Pipeline: azure_monitor_pipeline(query_table="SecurityEvent").
+// Source rule: detections/sigma/proc_creation_win_powershell_encoded_command_lab.yml
+// The EventID 4688 filter below is a SOURCE-SPECIFIC MANUAL SCOPING STEP.
+// The backend output has NOT been otherwise altered. Not production-tested.
+SecurityEvent
+| where EventID == 4688
+| where (NewProcessName endswith "\\powershell.exe" or NewProcessName endswith "\\pwsh.exe") and CommandLine matches regex "(?i)(?:^|\\s)-(?:encodedcommand|enc)(?:\\s|:|$)"
