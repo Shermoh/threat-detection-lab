@@ -6,12 +6,16 @@ on:
       - "detections/**"
       - "sample-data/**"
       - "tests/**"
+      - "case-studies/**"
+      - "tools/ir001_timeline.py"
       - ".github/workflows/tests.yml"
   pull_request:
     paths:
       - "detections/**"
       - "sample-data/**"
       - "tests/**"
+      - "case-studies/**"
+      - "tools/ir001_timeline.py"
       - ".github/workflows/tests.yml"
 
 permissions:
