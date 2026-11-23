@@ -95,6 +95,27 @@ The [pySigma-to-KQL conversion report](docs/sigma-to-kql-conversion.md) document
 
 **Important finding:** The Kusto backend mapped Sigma's `Image` to `NewProcessName` and preserved the command-line regex, but **did not automatically add `EventID == 4688`**. The reviewed query explicitly adds this source-specific condition. **Kusto synthetic execution now verified: 20 `PASS`, 0 `FAIL`**, confirmed from two user-provided result screenshots on November 22, 2026. See the [Sigma conversion validation report](docs/sigma-kql-validation-results-2026-11-22.md). The earlier 7-pass result relates to the separate session/IP lab. **Live Microsoft Sentinel telemetry remains untested.**
 
+## IR-001 — Simulated incident-response investigation
+
+The first [incident-response case study](case-studies/IR-001-word-powershell/README.md) reconstructs a **fictional document-to-PowerShell incident** using **15 synthetic events** from email security, Windows authentication (4624/4625), process creation (4688), PowerShell script-block logging (4104), DNS/proxy, task registration (4698), and EDR review.
+
+This portfolio artifact includes:
+
+- [Synthetic event records](case-studies/IR-001-word-powershell/data/events.csv) and a [chronological timeline](case-studies/IR-001-word-powershell/docs/timeline.md).
+- [Evidence/hypothesis matrix](case-studies/IR-001-word-powershell/docs/evidence-matrix.md) separating facts, confidence and unresolved questions.
+- [Structured investigation report](case-studies/IR-001-word-powershell/docs/incident-report.md) and [proposed containment decisions](case-studies/IR-001-word-powershell/docs/response-decisions.md).
+- [Interview-style analyst questions](case-studies/IR-001-word-powershell/docs/analyst-exercise.md).
+- [Reproducible Python timeline](tools/ir001_timeline.py) and [automated consistency checks](tests/test_ir001_case.py).
+
+**Crucial distinction:** Word-to-PowerShell execution and a registered task are recorded in the simulated evidence; unauthorized remote access, payload execution and working persistence are **not established**. No real incident, malware execution or containment is claimed.
+
+Reproduce the timeline:
+
+```bash
+python tools/ir001_timeline.py
+python tools/ir001_timeline.py --json
+```
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
@@ -113,7 +134,8 @@ The [pySigma-to-KQL conversion report](docs/sigma-to-kql-conversion.md) document
 - [x] Identify and document missing EventID scoping and add a source-aware wrapper
 - [x] Execute converted Sigma KQL test harness in Azure Data Explorer (20 PASS, 0 FAIL observed)
 - [ ] Validate converted KQL against authorized live Sentinel SecurityEvent telemetry
-- [ ] Build a simulated identity-compromise investigation
+- [x] Build a synthetic incident-response investigation with correlated identity activity, document execution, task registration, decision log and tests
+- [ ] Expand the case with additional identity-provider evidence and independently verified scope
 
 ## Safety and data handling
 
