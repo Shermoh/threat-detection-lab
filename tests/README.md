@@ -1,6 +1,6 @@
 # Offline detection tests
 
-Run from the repository root:
+Install the pinned dependency from `requirements-dev.txt` before running the full suite. Run from the repository root:
 
 ```bash
 python -m unittest discover -s tests -v
@@ -25,3 +25,9 @@ This Python standard-library suite checks all **20** synthetic fixtures, expecte
 [`kql/session_ip_synthetic_validation.kql`](kql/session_ip_synthetic_validation.kql) contains an inline KQL `datatable` with 29 fake events, the same session/IP correlation query logic, and seven expected outcomes. Run the **entire** file in a Kusto query editor to check for 7 PASS and 0 FAIL. Follow the [playbook](../docs/kql-validation-playbook.md).
 
 [`test_kql_harness_contract.py`](test_kql_harness_contract.py) verifies the inline test remains synchronized with the maintained KQL logic. **The contract and Python tests are not a live KQL run.**
+
+### Sigma rule validation
+
+Install pinned parser dependency with `python -m pip install -r requirements-dev.txt` (requires Python 3.11+), then run `python -m unittest discover -s tests -v`.
+
+[`test_sigma_rule.py`](test_sigma_rule.py) parses the [Sigma YAML](../detections/sigma/proc_creation_win_powershell_encoded_command_lab.yml) using pySigma and checks the image and regex selections against 20 curated synthetic events. This is *not* SIEM-backend query execution. See [Sigma methodology](../docs/sigma-detection.md).
