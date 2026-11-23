@@ -2,7 +2,9 @@
 // Source: https://github.com/Shermoh/threat-detection-lab/blob/main/detections/sigma/proc_creation_win_powershell_encoded_command_lab.yml
 // Conversion: pySigma 1.5.1, pysigma-backend-kusto 1.0.1, Azure Monitor SecurityEvent pipeline.
 // Inline synthetic fixtures: 20 events; expected 20 PASS, 0 FAIL.
-// Not yet executed in a Kusto query engine; paste the WHOLE file to test.
+// Observed 20 PASS, 0 FAIL in Azure Data Explorer/Kusto on 2026-11-22.
+// See docs/sigma-kql-validation-results-2026-11-22.md for user-verified evidence.
+// This does NOT validate live Sentinel SecurityEvent telemetry.
 let Cases = datatable(TestCase:string, EventID:int, NewProcessName:string, CommandLine:string, ExpectedMatch:bool, GroundTruth:string)[
   @"S001", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -NoProfile -EncodedCommand QQBCAEMA", true, @"suspicious",
   @"S002", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", true, @"suspicious",
