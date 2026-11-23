@@ -69,7 +69,7 @@ The [session and IP correlation exercise](docs/session-ip-correlation.md) improv
 
 The [KQL validation playbook](docs/kql-validation-playbook.md) provides a self-contained [Kusto datatable test query](tests/kql/session_ip_synthetic_validation.kql) with **29 fictional events** and **seven expected cases**. It tests the **actual KQL correlation logic** on inline data (rather than only relying on a Python mirror) when executed in a Kusto-compatible query editor.
 
-**Expected upon execution:** 7 `PASS`, 0 `FAIL`. **Actual KQL execution: pending.** The [test-harness contract checks](tests/test_kql_harness_contract.py) passed in GitHub Actions and guard against text drift, but they do **not** compile or execute KQL.
+**Observed KQL execution:** **7 `PASS`, 0 `FAIL`** on **2026-11-23 04:04 UTC**, using an inline synthetic dataset in the Azure Data Explorer/Kusto editor. See [recorded validation results](docs/kql-validation-results-2026-11-23.md). The [test-harness contract checks](tests/test_kql_harness_contract.py) also passed in GitHub Actions. **Real Microsoft Sentinel `SecurityEvent` integration remains untested.**
 
 ## Roadmap
 
@@ -79,7 +79,7 @@ The [KQL validation playbook](docs/kql-validation-playbook.md) provides a self-c
 - [x] Add synthetic positive, negative, missing-data, and false-positive cases
 - [x] Add an automated Python test workflow
 - [x] Prepare a KQL-native synthetic test harness and repeatable validation checklist
-- [ ] Execute the KQL harness in Sentinel/Kusto and capture PASS/FAIL evidence
+- [x] Execute synthetic KQL harness in Kusto/Azure Data Explorer and record 7 PASS, 0 FAIL
 - [ ] Validate actual workspace field mappings with authorized telemetry
 - [x] Demonstrate risk-based triage with correlated failed authentication events
 - [x] Demonstrate session-ID and source-IP correlation with defensive negative tests
