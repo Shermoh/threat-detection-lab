@@ -1,6 +1,6 @@
 # KQL validation playbook — Lab 1D
 
-**Status (as authored):** An executable, synthetic-data KQL test has been prepared. **No successful run in a live Kusto / Sentinel query engine has been recorded.** GitHub Actions runs Python unit tests and a static fixture/query contract check; those are not substitutes for KQL execution.
+**Validation update (2026-11-23):** The synthetic KQL harness **executed successfully in Azure Data Explorer/Kusto** with **7 PASS and 0 FAIL**, verified from a user-provided results screenshot. See [the observed-results report](kql-validation-results-2026-11-23.md). **Live Microsoft Sentinel/Log Analytics `SecurityEvent` integration and production analytics-rule deployment are not validated.** GitHub Actions separately runs Python unit tests and a static fixture/query contract check.
 
 ## Purpose
 
@@ -65,12 +65,12 @@ Only mark a validation stage complete when you have actual observed results.
 | Stage | Expected | Recorded result |
 | --- | --- | --- |
 | Python GitHub Actions | Offline suite passes | Check the Actions tab |
-| KQL datatable execution | 7 PASS, 0 FAIL | **Pending user-run KQL execution** |
+| KQL datatable execution | 7 PASS, 0 FAIL | **Verified: 7 PASS, 0 FAIL** in Azure Data Explorer/Kusto, 2026-11-23 04:04 UTC ([record](kql-validation-results-2026-11-23.md)) |
 | Workspace schema check | Required fields available | Not checked |
 | Real SecurityEvent integration | Queries run on representative authorized events | Not checked |
 | Security review and tuning | False positives/negatives, safeguards documented | Not checked |
 
-When you run the KQL test, record the execution date, KQL query commit SHA, actual PASS/FAIL counts, errors, and any corrective changes. Do not publish workspace secrets or raw organizational logs.
+The completed [validation record](kql-validation-results-2026-11-23.md) documents the execution date, query commit SHA, visible results, and remaining limitations. For subsequent runs, record the same evidence. Do not publish workspace secrets or raw organizational logs.
 
 ## Limitations
 
