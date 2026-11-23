@@ -1,6 +1,6 @@
 # Lab 1G — Real pySigma-to-KQL conversion and SecurityEvent scoping
 
-**State:** Actual pySigma Kusto backend conversion executed successfully in GitHub Actions, and the output has been saved. A **KQL-native synthetic test is prepared but has not yet been executed in Azure Data Explorer**. Real Microsoft Sentinel telemetry ingestion and production alerting remain unvalidated.
+**State:** Actual pySigma Kusto backend conversion completed successfully in GitHub Actions, followed by **20 PASS, 0 FAIL observed in Azure Data Explorer/Kusto** using the source-scoped converted query against synthetic fixtures. See the [validation evidence](sigma-kql-validation-results-2026-11-22.md). Real Microsoft Sentinel telemetry ingestion and production alerting remain unvalidated.
 
 ## Objective
 
@@ -59,7 +59,7 @@ It preserves the backend-generated filter but adds:
 - Expected-match labels and a \`ValidationStatus\` column that checks the actual KQL results.
 - A final result table designed to show **20 PASS / 0 FAIL**, with **9 matches and 11 nonmatches**.
 
-**This test is ready but not yet run in the Kusto query engine.** The earlier **7 PASS / 0 FAIL** result in this repository relates to a *different session/IP correlation query*, not this Sigma-converted rule.
+**Observed:** The test ran successfully in Azure Data Explorer/Kusto with **20 PASS, 0 FAIL**, verified from two result screenshots shared on November 22, 2026. See the [result-by-case report](sigma-kql-validation-results-2026-11-22.md). The earlier **7 PASS / 0 FAIL** result relates to a *different session/IP correlation query*.
 
 ### How to run the test
 
@@ -82,7 +82,7 @@ The backend conversion's Python contract test checks:
 - The scoped version contains \`EventID == 4688\` followed by the unchanged backend predicate.
 - The KQL test harness contains all 20 labelled fixture cases and the same predicate.
 
-These static and Python tests do **not** execute the KQL engine. A completed Kusto test run will provide separate query-engine evidence.
+These static and Python tests do **not** execute the KQL engine. The independently executed Kusto test is documented in the [20-case observed-results report](sigma-kql-validation-results-2026-11-22.md); this still does not verify live Sentinel ingestion or detection efficacy.
 
 ## Remaining limitations
 
