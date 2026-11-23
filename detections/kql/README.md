@@ -23,3 +23,7 @@ See [design notes](../../docs/first-detection-plan.md) and the [investigation gu
 ### KQL-native validation instructions
 
 The [session/IP synthetic validation query](../../tests/kql/session_ip_synthetic_validation.kql) is ready to run in a Kusto engine with an inline `datatable`; expected results: seven PASS rows, no failures. See the [validation playbook](../../docs/kql-validation-playbook.md). **KQL execution has not yet been completed.**
+
+## Converted Sigma rule
+
+Our [Sigma-to-KQL report](../../docs/sigma-to-kql-conversion.md) includes the [raw backend output](generated/powershell_sigma_backend_raw.kql), [Event 4688-scoped query](generated/powershell_sigma_securityevent_4688.kql), and [20-case Kusto synthetic test harness](../../tests/kql/sigma_conversion_validation.kql). **Backend conversion tests passed; actual execution of the new KQL harness is pending.**
