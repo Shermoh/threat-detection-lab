@@ -1,0 +1,39 @@
+// Real backend-generated Sigma KQL filter, scoped to Windows Security 4688.
+// Source: https://github.com/Shermoh/threat-detection-lab/blob/main/detections/sigma/proc_creation_win_powershell_encoded_command_lab.yml
+// Conversion: pySigma 1.5.1, pysigma-backend-kusto 1.0.1, Azure Monitor SecurityEvent pipeline.
+// Inline synthetic fixtures: 20 events; expected 20 PASS, 0 FAIL.
+// Not yet executed in a Kusto query engine; paste the WHOLE file to test.
+let Cases = datatable(TestCase:string, EventID:int, NewProcessName:string, CommandLine:string, ExpectedMatch:bool, GroundTruth:string)[
+  @"S001", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -NoProfile -EncodedCommand QQBCAEMA", true, @"suspicious",
+  @"S002", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", true, @"suspicious",
+  @"S003", 4688, @"C:\Program Files\PowerShell\7\pwsh.exe", @"pwsh.exe -EncodedCommand:QQBCAEMA", true, @"suspicious",
+  @"S004", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", true, @"benign",
+  @"S005", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -ENC QQBCAEMA", true, @"suspicious",
+  @"S006", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -NoProfile -Command Get-Service", false, @"benign",
+  @"S007", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -File C:\Scripts\health-check.ps1", false, @"benign",
+  @"S008", 4688, @"C:\Windows\System32\cmd.exe", @"cmd.exe /c powershell.exe -enc QQBCAEMA", false, @"benign",
+  @"S009", 4688, @"C:\Tools\notpowershell.exe", @"notpowershell.exe -enc QQBCAEMA", false, @"benign",
+  @"S010", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommandX QQBCAEMA", false, @"benign",
+  @"S011", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"", false, @"benign",
+  @"S012", 4624, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", false, @"benign",
+  @"S013", 4688, @"C:\Tools\psrunner.exe", @"psrunner.exe -enc QQBCAEMA", false, @"suspicious",
+  @"S014", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -WindowStyle Hidden -File C:\Scripts\backup.ps1", false, @"benign",
+  @"S015", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", true, @"suspicious",
+  @"S016", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", true, @"benign",
+  @"S017", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -Command Get-Service", false, @"benign",
+  @"S018", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", true, @"suspicious",
+  @"S019", 4688, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", true, @"suspicious",
+  @"S020", 4624, @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -enc QQBCAEMA", false, @"benign"
+];
+let Matches = Cases
+| where EventID == 4688
+| where (NewProcessName endswith "\\powershell.exe" or NewProcessName endswith "\\pwsh.exe") and CommandLine matches regex "(?i)(?:^|\\s)-(?:encodedcommand|enc)(?:\\s|:|$)"
+| project TestCase
+| extend Seen=true;
+Cases
+| join kind=leftouter Matches on TestCase
+| extend ActualMatch=coalesce(Seen,false)
+| extend ValidationStatus=iff(ActualMatch==ExpectedMatch,"PASS","FAIL")
+| project TestCase, ValidationStatus, ExpectedMatch, ActualMatch, GroundTruth,
+          EventID, NewProcessName, CommandLine
+| order by ValidationStatus asc, TestCase asc
