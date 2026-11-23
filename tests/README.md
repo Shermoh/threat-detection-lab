@@ -31,3 +31,7 @@ This Python standard-library suite checks all **20** synthetic fixtures, expecte
 Install pinned parser dependency with `python -m pip install -r requirements-dev.txt` (requires Python 3.11+), then run `python -m unittest discover -s tests -v`.
 
 [`test_sigma_rule.py`](test_sigma_rule.py) parses the [Sigma YAML](../detections/sigma/proc_creation_win_powershell_encoded_command_lab.yml) using pySigma and checks the image and regex selections against 20 curated synthetic events. This is *not* SIEM-backend query execution. See [Sigma methodology](../docs/sigma-detection.md).
+
+## Sigma-to-KQL backend validation
+
+Run [`test_sigma_conversion.py`](test_sigma_conversion.py) in the **separate pinned pySigma 1.5.1 / Kusto backend 1.0.1 workflow**, not the pySigma 2.x parser environment. [`sigma-conversion.yml`](../.github/workflows/sigma-conversion.yml) converts the real Sigma rule and checks generated KQL snapshots. The [20-case KQL datatable validation](kql/sigma_conversion_validation.kql) must still be executed in a Kusto query engine (expected: 20 PASS, 0 FAIL).
