@@ -5,7 +5,8 @@
 // instead of ago() so the results do not change as dates advance.
 // Expected: seven PASS rows, zero FAIL rows.
 // This file was generated from the repository's CSV fixture, but KQL
-// execution in a Microsoft environment is still pending.
+// Kusto/Azure Data Explorer synthetic execution verified: 7 PASS, 0 FAIL
+// on 2026-11-23 04:04 UTC; live Sentinel telemetry NOT validated.
 let testNow=datetime(2026-11-21T16:00:00Z);
 let SecurityEvent = datatable(_ItemId:string, TimeGenerated:datetime, EventID:int, Computer:string, Account:string, TargetDomainName:string, TargetUserName:string, NewProcessName:string, CommandLine:string, ParentProcessName:string, SubjectLogonId:string, TargetLogonId:string, IpAddress:string)[
   @"P001", datetime(2026-11-21T12:03:00Z), 4688, @"LAB-WIN04", @"LAB\svc-maint", @"", @"", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", @"powershell.exe -EncodedCommand QQBCAEMA", @"C:\Windows\System32\services.exe", @"0x111", @"", @"",
