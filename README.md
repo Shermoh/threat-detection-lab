@@ -116,6 +116,12 @@ python tools/ir001_timeline.py
 python tools/ir001_timeline.py --json
 ```
 
+## IR-001B — Investigating task execution and persistence
+
+The [task-execution follow-up](case-studies/IR-001-word-powershell/follow-up-task-execution/README.md) models newly recovered evidence as a **separate hypothetical branch**. It distinguishes Task Scheduler registration (4698), action start (200), scheduler-linked process launch (129 and Windows 4688), action completion (201), and evidence of a registry Run-key change (4657 plus snapshot). A wrong-host decoy demonstrates why correlating by task name alone is unsafe.
+
+The [offline analysis script](tools/ir001_task_followup.py) and [unit tests](tests/test_ir001_task_followup.py) verify the positive chain and negative controls. This does **not** prove a script fully succeeded or that an autorun executed later, and does not alter the original IR-001 findings.
+
 ## Roadmap
 
 - [x] Structure repository and document safe data use
@@ -135,6 +141,7 @@ python tools/ir001_timeline.py --json
 - [x] Execute converted Sigma KQL test harness in Azure Data Explorer (20 PASS, 0 FAIL observed)
 - [ ] Validate converted KQL against authorized live Sentinel SecurityEvent telemetry
 - [x] Build a synthetic incident-response investigation with correlated identity activity, document execution, task registration, decision log and tests
+- [x] Add alternate task-execution evidence and wrong-host correlation tests
 - [ ] Expand the case with additional identity-provider evidence and independently verified scope
 
 ## Safety and data handling
