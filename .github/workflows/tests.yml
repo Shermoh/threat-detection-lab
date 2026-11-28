@@ -8,6 +8,7 @@ on:
       - "tests/**"
       - "case-studies/**"
       - "tools/ir001_timeline.py"
+      - "tools/ir001_task_followup.py"
       - ".github/workflows/tests.yml"
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - "tests/**"
       - "case-studies/**"
       - "tools/ir001_timeline.py"
+      - "tools/ir001_task_followup.py"
       - ".github/workflows/tests.yml"
 
 permissions:
