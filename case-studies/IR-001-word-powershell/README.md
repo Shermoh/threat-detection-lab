@@ -27,6 +27,12 @@ Do **not** infer that one blocked request closes the incident.
 | [Timeline generator](../../tools/ir001_timeline.py) | Standard-library Python script to reproduce a timeline/summary |
 | [Automated tests](../../tests/test_ir001_case.py) | Checks chronology, identity correlation and evidence consistency |
 
+## Optional follow-up: Task execution and registry persistence
+
+The [IR-001 task-execution follow-up](follow-up-task-execution/README.md) adds **two clearly separate, fictional evidence packets** without changing the original 15-event investigation. One packet contains Task Scheduler action/launch/completion events, corroborating PowerShell process execution and registry Run-key modification; the other contains same-name decoys on a different host. [Python correlation checks](../../tests/test_ir001_task_followup.py) cover both.
+
+This is a **what-if extension**, not retrospective proof that the original task ran. The corresponding data and conclusions must not be merged with the original intake evidence.
+
 ## Reproduce the analysis
 
 Requires Python 3.11+; no external packages for this case-study script:
