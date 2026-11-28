@@ -48,7 +48,7 @@ class IR001TaskFollowupTests(unittest.TestCase):
         self.assertIn("No execution observed", result["conclusion"])
 
     def test_wrong_host_scheduler_event_cannot_fabricate_link(self):
-        mixed = [e for e in self.a if e["event_id" if False else "evidence_id"] != "F-002"]
+        mixed = [e for e in self.a if e["evidence_id"] != "F-002"]
         # A real process exists, but its TaskScheduler 129 launch evidence is absent.
         mixed += [e for e in self.b if e["event_code"] == "129"]
         result = investigate(mixed)
