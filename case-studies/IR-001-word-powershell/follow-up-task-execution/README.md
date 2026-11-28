@@ -41,7 +41,7 @@ python tools/ir001_task_followup.py --scenario UNRELATED_B
 python -m unittest discover -s tests -p test_ir001_task_followup.py -v
 ```
 
-The [analysis script](../../tools/ir001_task_followup.py) matches on **host + account + task name + Task Scheduler run instance**, correlates Task Scheduler Event 129's PID to Windows 4688 in a short window, then checks process-level 4104/4657 and a later snapshot. [Automated tests](../../tests/test_ir001_task_followup.py) verify the expected positive path, a wrong-host decoy, a mismatched task instance, and command-line mismatch.
+The [analysis script](../../../tools/ir001_task_followup.py) matches on **host + account + task name + Task Scheduler run instance**, correlates Task Scheduler Event 129's PID to Windows 4688 in a short window, then checks process-level 4104/4657 and a later snapshot. [Automated tests](../../../tests/test_ir001_task_followup.py) verify the expected positive path, a wrong-host decoy, a mismatched task instance, and command-line mismatch.
 
 ### Important data-model caveats
 
